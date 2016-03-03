@@ -1,34 +1,29 @@
-package com.sdl.webapp.smarttarget;
+package com.sdl.dxa.modules.smarttarget;
 
-import com.google.common.base.Strings;
-import com.sdl.webapp.common.api.content.*;
+import com.sdl.dxa.modules.smarttarget.model.SmartTargetRegionMvcData;
+import com.sdl.webapp.common.api.content.ContentProvider;
+import com.sdl.webapp.common.api.content.ContentProviderException;
 import com.sdl.webapp.common.api.localization.Localization;
-import com.sdl.webapp.common.api.model.*;
-import com.sdl.webapp.common.api.model.entity.AbstractEntityModel;
-import com.sdl.webapp.common.api.model.region.RegionModelImpl;
-import com.sdl.webapp.common.api.model.region.RegionModelSetImpl;
+import com.sdl.webapp.common.api.model.EntityModel;
+import com.sdl.webapp.common.api.model.PageModel;
+import com.sdl.webapp.common.api.model.RegionModel;
 import com.sdl.webapp.common.api.xpm.ComponentType;
 import com.sdl.webapp.common.api.xpm.XpmRegion;
 import com.sdl.webapp.common.api.xpm.XpmRegionConfig;
 import com.sdl.webapp.common.exceptions.DxaException;
-import com.sdl.webapp.smarttarget.model.SmartTargetComponentPresentation;
-import com.sdl.webapp.smarttarget.model.SmartTargetQueryResult;
-import com.sdl.webapp.smarttarget.model.SmartTargetRegion;
-import com.sdl.webapp.smarttarget.model.SmartTargetRegionMvcData;
-import com.sdl.webapp.tridion.ModelBuilderPipeline;
-import com.sdl.webapp.tridion.PageBuilder;
+import com.sdl.dxa.modules.smarttarget.model.SmartTargetComponentPresentation;
+import com.sdl.dxa.modules.smarttarget.model.SmartTargetQueryResult;
+import com.sdl.dxa.modules.smarttarget.model.SmartTargetRegion;
+import com.sdl.webapp.tridion.mapping.PageBuilder;
 import com.tridion.smarttarget.SmartTargetException;
 import org.dd4t.contentmodel.Page;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,21 +45,16 @@ public class SmartTargetPageBuilder implements PageBuilder {
 
     private final ContentProvider contentProvider;
 
-    private final ModelBuilderPipeline modelBuilderPipeline;
-
     @Value("${smarttarget.enabled}")
     private boolean enabled = true;
 
     @Autowired
     public SmartTargetPageBuilder(SmartTargetService smartTargetService,
                                   XpmRegionConfig xpmRegionConfig,
-                                  ContentProvider contentProvider,
-                                  ModelBuilderPipeline modelBuilderPipeline) {
+                                  ContentProvider contentProvider) {
         this.smartTargetService = smartTargetService;
         this.xpmRegionConfig = xpmRegionConfig;
         this.contentProvider = contentProvider;
-        this.modelBuilderPipeline = modelBuilderPipeline;
-        this.modelBuilderPipeline.addPageBuilderHandler(this);
     }
 
     @Override
@@ -80,6 +70,11 @@ public class SmartTargetPageBuilder implements PageBuilder {
         }
 
         return pageModel;
+    }
+
+    @Override
+    public int getOrder() {
+        return 100;
     }
 
     private void populateSmartTargetRegions(PageModel page, Localization localization) throws ContentProviderException, DxaException {
@@ -119,7 +114,6 @@ public class SmartTargetPageBuilder implements PageBuilder {
 
                     this.enrichEntityWithSmartTargetData(entity, stComponentPresentation);
                     stRegion.addEntity(entity);
-
                 }
 
             }
@@ -131,14 +125,9 @@ public class SmartTargetPageBuilder implements PageBuilder {
     }
 
     private void enrichEntityWithSmartTargetData(EntityModel entity, SmartTargetComponentPresentation stComponentPresentation) {
-        if ( entity instanceof AbstractEntityModel) {
-            HashMap<String, String> entityData = new HashMap<>();
-            entityData.putAll(entity.getXpmMetadata());
-            entityData.put("PromotionID", stComponentPresentation.getPromotionId());
-            entityData.put("RegionID", stComponentPresentation.getRegionName());
-            entityData.put("IsExperiment", Boolean.toString(stComponentPresentation.isExperiment()));
-            ((AbstractEntityModel) entity).setXpmMetadata(entityData);
-        }
+        entity.getXpmMetadata().put("PromotionID", stComponentPresentation.getPromotionId());
+        entity.getXpmMetadata().put("RegionID", stComponentPresentation.getRegionName());
+        entity.getXpmMetadata().put("IsExperiment", Boolean.toString(stComponentPresentation.isExperiment()));
     }
 
     private List<SmartTargetRegionConfig> getSmartTargetRegionConfiguration(PageModel page) {

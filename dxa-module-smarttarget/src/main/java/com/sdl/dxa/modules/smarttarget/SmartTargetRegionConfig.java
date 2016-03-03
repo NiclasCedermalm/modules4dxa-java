@@ -1,4 +1,4 @@
-package com.sdl.webapp.smarttarget;
+package com.sdl.dxa.modules.smarttarget;
 
 import java.util.Map;
 

@@ -8,9 +8,9 @@
                            http://www.springframework.org/schema/context/spring-context.xsd">
 
     <context:annotation-config/>
-    <context:component-scan base-package="com.sdl.webapp.smarttarget"/>
+    <context:component-scan base-package="com.sdl.dxa.modules.smarttarget"/>
 
-    <bean class="com.sdl.webapp.common.api.mapping.RegisterSemanticClasses">
-        <property name="namespace" value="com.sdl.webapp.smarttarget.model"/>
+    <bean class="com.sdl.webapp.common.api.mapping.semantic.RegisterSemanticClasses">
+        <property name="namespace" value="com.sdl.dxa.modules.smarttarget.model"/>
     </bean>
 </beans>

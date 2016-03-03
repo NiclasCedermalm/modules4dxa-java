@@ -1,16 +1,12 @@
-package com.sdl.webapp.smarttarget.markup;
+package com.sdl.dxa.modules.smarttarget.markup;
 
+import com.sdl.dxa.modules.smarttarget.model.SmartTargetRegion;
 import com.sdl.webapp.common.api.WebRequestContext;
 import com.sdl.webapp.common.api.model.ViewModel;
 import com.sdl.webapp.common.markup.MarkupDecorator;
 import com.sdl.webapp.common.markup.html.HtmlCommentNode;
 import com.sdl.webapp.common.markup.html.HtmlNode;
-import com.sdl.webapp.common.markup.html.ParsableHtmlNode;
 import com.sdl.webapp.common.markup.html.builders.HtmlBuilders;
-import com.sdl.webapp.smarttarget.model.SmartTargetRegion;
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
 
 /**
  * SmartTarget Region XPM Markup
@@ -36,13 +32,13 @@ public class SmartTargetRegionXpmMarkup implements MarkupDecorator {
                 //
                 markup =
                         HtmlBuilders.span()
-                                .withContent(new HtmlCommentNode(stRegion.getXpmMarkup()))
-                                .withContent(markup).build();
+                                .withNode(new HtmlCommentNode(stRegion.getXpmMarkup()))
+                                .withNode(markup).build();
 
-                /* NEEDED???
+                /* TODO: Do we need to have the following markup?
                 markup = HtmlBuilders.span()
-                        .withLiteralContent("<!-- Start Promotion Region: {\"RegionID\": \"" + stRegion.getName() + "\"} -->")
-                        .withContent(markup).build();
+                        .withTextContent("<!-- Start Promotion Region: {\"RegionID\": \"" + stRegion.getName() + "\"} -->")
+                        .withNode(markup).build();
                         */
             }
         }

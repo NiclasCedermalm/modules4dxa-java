@@ -1,9 +1,9 @@
-package com.sdl.webapp.smarttarget;
+package com.sdl.dxa.modules.smarttarget;
 
+import com.sdl.dxa.modules.smarttarget.model.SmartTargetComponentPresentation;
+import com.sdl.dxa.modules.smarttarget.model.SmartTargetQueryResult;
 import com.sdl.webapp.common.api.WebRequestContext;
-import com.sdl.webapp.common.util.TcmUtils;
-import com.sdl.webapp.smarttarget.model.SmartTargetComponentPresentation;
-import com.sdl.webapp.smarttarget.model.SmartTargetQueryResult;
+import com.sdl.webapp.util.dd4t.TcmUtils;
 import com.tridion.ambientdata.AmbientDataContext;
 import com.tridion.ambientdata.claimstore.ClaimStore;
 import com.tridion.configuration.Configuration;

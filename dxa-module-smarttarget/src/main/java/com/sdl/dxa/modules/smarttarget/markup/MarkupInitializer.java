@@ -1,7 +1,7 @@
-package com.sdl.webapp.smarttarget.markup;
+package com.sdl.dxa.modules.smarttarget.markup;
 
 import com.sdl.webapp.common.markup.MarkupDecoratorRegistry;
-import com.sdl.webapp.smarttarget.SmartTargetService;
+import com.sdl.dxa.modules.smarttarget.SmartTargetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

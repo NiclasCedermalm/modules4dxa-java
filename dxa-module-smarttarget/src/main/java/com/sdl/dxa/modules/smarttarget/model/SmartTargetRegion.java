@@ -1,4 +1,4 @@
-package com.sdl.webapp.smarttarget.model;
+package com.sdl.dxa.modules.smarttarget.model;
 
 import com.sdl.webapp.common.api.model.region.RegionModelImpl;
 import com.sdl.webapp.common.exceptions.DxaException;

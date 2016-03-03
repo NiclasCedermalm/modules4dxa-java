@@ -1,6 +1,4 @@
-package com.sdl.webapp.smarttarget.model;
-
-import com.sdl.webapp.smarttarget.model.SmartTargetComponentPresentation;
+package com.sdl.dxa.modules.smarttarget.model;
 
 import java.util.List;
 

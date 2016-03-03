@@ -1,4 +1,4 @@
-package com.sdl.webapp.smarttarget.markup;
+package com.sdl.dxa.modules.smarttarget.markup;
 
 import com.sdl.webapp.common.api.WebRequestContext;
 import com.sdl.webapp.common.api.model.EntityModel;
@@ -8,10 +8,8 @@ import com.sdl.webapp.common.markup.html.HtmlCommentNode;
 import com.sdl.webapp.common.markup.html.HtmlNode;
 import com.sdl.webapp.common.markup.html.ParsableHtmlNode;
 import com.sdl.webapp.common.markup.html.builders.HtmlBuilders;
-import com.sdl.webapp.smarttarget.model.SmartTargetComponentPresentation;
-import com.sdl.webapp.smarttarget.SmartTargetService;
-
-import java.util.Map;
+import com.sdl.dxa.modules.smarttarget.model.SmartTargetComponentPresentation;
+import com.sdl.dxa.modules.smarttarget.SmartTargetService;
 
 /**
  * SmartTarget Promotion XPM Markup
@@ -37,17 +35,16 @@ public class SmartTargetPromotionXpmMarkup implements MarkupDecorator {
             if ( model instanceof EntityModel) {
 
                 EntityModel entity = (EntityModel) model;
-                final Map<String, String> entityData = entity.getXpmMetadata();
-                final String promotionId = entityData.get("PromotionID");
+                final String promotionId = (String) entity.getXpmMetadata().get("PromotionID");
 
                 if ( promotionId != null) {
 
                     SmartTargetComponentPresentation promotion = smartTargetService.getSavedPromotionItem(promotionId, entity.getId());
                     markup = HtmlBuilders.span()
-                            .withContent(this.buildXpmMarkup(promotion.getPromotionId(), promotion.getRegionName()))
-                            .withContent(markup).build();
+                            .withNode(this.buildXpmMarkup(promotion.getPromotionId(), promotion.getRegionName()))
+                            .withNode(markup).build();
 
-                    final boolean isExperiment = Boolean.parseBoolean(entity.getXpmMetadata().get("IsExperiment"));
+                    final boolean isExperiment = Boolean.parseBoolean(entity.getXpmMetadata().get("IsExperiment").toString());
                     if ( isExperiment ) {
                         SmartTargetComponentPresentation stComponentPresentation = this.smartTargetService.getSavedPromotionItem(promotionId, entity.getId());
                         if ( stComponentPresentation != null ) {
