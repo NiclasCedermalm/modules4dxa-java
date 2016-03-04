@@ -2,6 +2,7 @@
 .project
 .checkstyle
 *.iml
+*.jar
 .idea
 .settings/
 target/

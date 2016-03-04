@@ -2,11 +2,13 @@ package com.sdl.dxa.modules.smarttarget;
 
 import com.sdl.dxa.modules.smarttarget.model.SmartTargetComponentPresentation;
 import com.sdl.dxa.modules.smarttarget.model.SmartTargetQueryResult;
+import com.sdl.dxa.modules.smarttarget.SmartTargetRegionConfig.AllowDuplicatesValue;
 import com.sdl.webapp.common.api.WebRequestContext;
 import com.sdl.webapp.util.dd4t.TcmUtils;
 import com.tridion.ambientdata.AmbientDataContext;
 import com.tridion.ambientdata.claimstore.ClaimStore;
 import com.tridion.configuration.Configuration;
+import com.tridion.configuration.ConfigurationException;
 import com.tridion.smarttarget.SmartTargetException;
 import com.tridion.smarttarget.analytics.AnalyticsManager;
 import com.tridion.smarttarget.analytics.results.AnalyticsResults;
@@ -54,13 +56,13 @@ public class SmartTargetService {
 
     private AnalyticsManager analyticsManager = null;
 
-    private int queryTimeout = 10000; // TODO: Read from smarttarget_conf.xml
+    private int queryTimeout;
 
     private boolean experimentAutomaticSelectionEnabled = false;
 
     static DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
-    private boolean defaultAllowDuplicatesValue;  // TODO: Or should the region builder manage this instead???
+    private boolean defaultAllowDuplicatesValue;
 
     private Map<String, Integer> cachedWinners = new WeakHashMap<>();
 
@@ -70,20 +72,22 @@ public class SmartTargetService {
     }
 
     @PostConstruct
-    public void initialize() {
+    public void initialize() throws ConfigurationException {
         Configuration config = ConfigurationUtility.getConfiguration("/Configuration/SmartTarget");
+        String queryTimeoutStr = config.getParameterValue("QueryServer/Timeouts/Query", "10000");
+        if ( queryTimeoutStr != null ) {
+            this.queryTimeout = Integer.parseInt(queryTimeoutStr);
+        }
         this.experimentAutomaticSelectionEnabled = config.getBooleanValue("ExperimentAutomaticSelection", false);
         this.defaultAllowDuplicatesValue = ConfigurationUtility.getDefaultAllowDuplicates().booleanValue();
     }
 
     public SmartTargetQueryResult query(String pageId,
                                         SmartTargetRegionConfig regionConfig,
-                                        List<String> componentTemplates) throws SmartTargetException {
+                                        List<String> componentTemplates,
+                                        List<String> itemsActiveOnPage) throws SmartTargetException {
 
         List<SmartTargetComponentPresentation> componentPresentations;
-
-        // TODO: Add support for pagewide promotions so they are not duplicated
-
         String publicationId = this.getPublicationId(componentTemplates);
         // TODO: Is the creation of query instance costly?
         TimeoutQueryRunner queryRunner = new TimeoutQueryRunner(Integer.toString(this.queryTimeout));
@@ -98,13 +102,19 @@ public class SmartTargetService {
 
         ResultSet rs = queryRunner.executeQuery(queryString, null, triggers, publicationId);
 
+        boolean allowDuplicates =
+                ( regionConfig.getAllowDuplicates() != null && regionConfig.getAllowDuplicates().equals(AllowDuplicatesValue.ALLOW) ) ||
+                ( regionConfig.getAllowDuplicates() != null && regionConfig.getAllowDuplicates().equals(AllowDuplicatesValue.USE_CONFIGURATION) && this.defaultAllowDuplicatesValue == true ) ||
+                ( regionConfig.getAllowDuplicates() == null && this.defaultAllowDuplicatesValue == true );
+
         if ( rs != null ) {
             componentPresentations = this.processPromotions(rs.getPromotions(),
                                                             componentTemplates,
                                                             regionConfig.getMaxItems(),
                                                             publicationId,
                                                             regionConfig.getRegionName(),
-                                                            pageId);
+                                                            pageId,
+                                                            allowDuplicates ? itemsActiveOnPage : null);
 
             if ( this.webRequestContext.isPreview() ) {
                 updateVisibilityState(rs.getPromotions(), componentPresentations);
@@ -249,7 +259,8 @@ public class SmartTargetService {
                                                                      int maxItems,
                                                                      String publicationId,
                                                                      String regionName,
-                                                                     String pageId) throws SmartTargetException {
+                                                                     String pageId,
+                                                                     List<String> itemsActiveOnPage) throws SmartTargetException {
 
         List<SmartTargetComponentPresentation> componentPresentations = new ArrayList<>();
         Map<String, ExperimentCookie> existingExperimentCookies = CookieProcessor.getExperimentCookies(this.httpRequest);
@@ -289,7 +300,7 @@ public class SmartTargetService {
 
                 int currentIndex = 0;
                 for (Item item : promotion.getItems() ) {
-                    if ( currentIndex++ == variant && componentTemplates.contains(item.getTemplateUriAsString()) ) {
+                    if ( currentIndex++ == variant && includeSmartTargetItem(item, componentTemplates, itemsActiveOnPage) ) {
                         experimentDimensions.setComponentId(item.getComponentUriAsString());
                         experimentDimensions.setComponentTemplateId(item.getTemplateUriAsString());
                         experimentDimensions.setPublicationId(publicationId);
@@ -308,6 +319,7 @@ public class SmartTargetService {
                         if ( newExperimentCookie != null ) {
                             cp.setAdditionalMarkup(this.getExperimentCookieMarkup(newExperimentCookie));
                         }
+
                         componentPresentations.add(cp);
                         if ( componentPresentations.size() >= maxItems ) {  break; }
 
@@ -315,9 +327,8 @@ public class SmartTargetService {
                 }
             }
             else {
-
                 for (Item item : promotion.getItems()) {
-                    if ( componentTemplates.contains(item.getTemplateUriAsString()) ) {
+                    if ( includeSmartTargetItem(item, componentTemplates, itemsActiveOnPage) ) {
                         SmartTargetComponentPresentation cp =
                                 new SmartTargetComponentPresentation(item.getComponentUriAsString(),
                                                                      item.getTemplateUriAsString(),
@@ -333,6 +344,12 @@ public class SmartTargetService {
         }
 
         return componentPresentations;
+
+    }
+
+    private boolean includeSmartTargetItem(Item item, List<String> componentTemplates, List<String> itemsActiveOnPage) throws SmartTargetException {
+        return  componentTemplates.contains(item.getTemplateUriAsString()) &&
+                (itemsActiveOnPage == null || !itemsActiveOnPage.contains(item.getComponentUriAsString()));
 
     }
 

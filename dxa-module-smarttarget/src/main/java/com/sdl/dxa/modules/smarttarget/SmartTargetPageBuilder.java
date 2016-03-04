@@ -82,6 +82,8 @@ public class SmartTargetPageBuilder implements PageBuilder {
         List<SmartTargetRegionConfig> smartTargetRegionConfigList = this.getSmartTargetRegionConfiguration(page);
         if ( smartTargetRegionConfigList == null ) return;
 
+        List<String> itemsActiveOnPage = new ArrayList<>();
+
         for (SmartTargetRegionConfig regionConfig : smartTargetRegionConfigList) {
             SmartTargetRegion stRegion = new SmartTargetRegion(regionConfig.getRegionName());
             stRegion.setName(regionConfig.getRegionName());
@@ -93,7 +95,8 @@ public class SmartTargetPageBuilder implements PageBuilder {
                 SmartTargetQueryResult queryResult =
                     this.smartTargetService.query(page.getId(),
                                                   regionConfig,
-                                                  this.getComponentTemplates(xpmRegion));
+                                                  this.getComponentTemplates(xpmRegion),
+                                                  itemsActiveOnPage);
 
                 stRegion.setXpmMarkup(queryResult.getXpmMarkup());
                 if ( queryResult.getComponentPresentations().size() > 0 ) {
@@ -114,6 +117,7 @@ public class SmartTargetPageBuilder implements PageBuilder {
 
                     this.enrichEntityWithSmartTargetData(entity, stComponentPresentation);
                     stRegion.addEntity(entity);
+                    itemsActiveOnPage.add(stComponentPresentation.getComponentUri());
                 }
 
             }
