@@ -23,7 +23,6 @@ I intend to follow Gitflow (http://nvie.com/posts/a-successful-git-branching-mod
 
 License
 ---------
-Copyright (c) 2016 SDL Group.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

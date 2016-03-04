@@ -9,7 +9,7 @@ It has the following functionality:
 * If no promotion found for current region it will fall back on the static content already residing on the page
 * Full support for Content Experiments including view and conversion tracking
 * Local DB analytics provider - offer the possibility to have all tracking of content experiments in a local SQL database instead of Google Analytics
-* Automatic selection of winner in Content Experiments, i.e. after a winner has been selected that promotion is always shown for all visitors. This is configurable in SmartTarget configuration.
+* Automatic selection of winner in Content Experiments, i.e. after a winner has been selected that promotion is always shown for all visitors. This is configurable in the SmartTarget configuration.
 
 ## Setup
 
