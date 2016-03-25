@@ -140,6 +140,12 @@ public class SmartTargetPageBuilder implements PageBuilder {
 
         List<SmartTargetRegionConfig> configList = new ArrayList<>();
         for ( Map<String,String> regionConfig : smartTargetRegionConfig ) {
+            if ( regionConfig.get("maxItems") == null  )
+            {
+                // Temporary workaround. We should have better way of detecting if this is a ST template or not.
+                //
+                return null;
+            }
             configList.add(new SmartTargetRegionConfig(regionConfig));
         }
         return configList;
