@@ -32,7 +32,7 @@ public class SmartTargetPromotionXpmMarkup implements MarkupDecorator {
 
         if ( webRequestContext.isPreview() ) {
 
-            if ( model instanceof EntityModel) {
+            if ( model instanceof EntityModel && model.getXpmMetadata() != null ) {
 
                 EntityModel entity = (EntityModel) model;
                 final String promotionId = (String) entity.getXpmMetadata().get("PromotionID");
