@@ -25,8 +25,8 @@ import com.tridion.smarttarget.utils.ConfigurationUtility;
 import com.tridion.smarttarget.utils.CookieProcessor;
 import com.tridion.smarttarget.utils.DateTimeConverters;
 import com.tridion.util.TCMURI;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +45,7 @@ import java.util.*;
 @Service
 public class SmartTargetService {
 
-    static private Log log = LogFactory.getLog(SmartTargetService.class);
+    static private Logger log = LoggerFactory.getLogger(SmartTargetService.class);
 
     @Autowired
     private HttpServletRequest httpRequest;

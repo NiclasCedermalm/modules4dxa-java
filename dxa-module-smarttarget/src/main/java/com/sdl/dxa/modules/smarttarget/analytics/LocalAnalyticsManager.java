@@ -13,8 +13,8 @@ import com.tridion.smarttarget.analytics.statistics.StatisticsFilters;
 import com.tridion.smarttarget.analytics.statistics.StatisticsTimeDimensions;
 import com.tridion.smarttarget.analytics.tracking.ExperimentDimensions;
 import com.tridion.smarttarget.experiments.statistics.Variants;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -25,7 +25,7 @@ import java.util.*;
  */
 public class LocalAnalyticsManager extends AnalyticsManager {
 
-    static private Log log = LogFactory.getLog(LocalAnalyticsManager.class);
+    static private Logger log = LoggerFactory.getLogger(LocalAnalyticsManager.class);
 
     // Static members to minimize the creation of new worker threads+repositories for each time
     //

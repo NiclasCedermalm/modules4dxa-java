@@ -4,8 +4,8 @@ import com.tridion.smarttarget.SmartTargetException;
 import com.tridion.smarttarget.analytics.AnalyticsConfiguration;
 import com.tridion.smarttarget.experiments.statistics.Variant;
 import com.tridion.smarttarget.experiments.statistics.Variants;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class AnalyticsResultWorker implements Runnable {
 
-    static private Log log = LogFactory.getLog(AnalyticsResultWorker.class);
+    static private Logger log = LoggerFactory.getLogger(AnalyticsResultWorker.class);
 
     private BlockingQueue<AnalyticsTask>  queue = new LinkedBlockingQueue<>();
     private List<AggregatedTracking> pendingTrackings = new ArrayList<>();

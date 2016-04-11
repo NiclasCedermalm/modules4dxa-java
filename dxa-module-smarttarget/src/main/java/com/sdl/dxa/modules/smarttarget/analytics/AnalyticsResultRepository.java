@@ -4,8 +4,8 @@ import com.tridion.smarttarget.SmartTargetException;
 import com.tridion.smarttarget.analytics.AnalyticsConfiguration;
 import com.tridion.smarttarget.analytics.statistics.StatisticsFilter;
 import com.tridion.smarttarget.analytics.statistics.StatisticsFilters;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
@@ -26,7 +26,7 @@ public class AnalyticsResultRepository {
     // TODO: Have it configurable so tracking is disabled as soon a winner has been selected
     // -> In this case use the winner table for this.
 
-    static private Log log = LogFactory.getLog(AnalyticsResultRepository.class);
+    static private Logger log = LoggerFactory.getLogger(AnalyticsResultRepository.class);
 
     private JdbcTemplate jdbcTemplate;
 

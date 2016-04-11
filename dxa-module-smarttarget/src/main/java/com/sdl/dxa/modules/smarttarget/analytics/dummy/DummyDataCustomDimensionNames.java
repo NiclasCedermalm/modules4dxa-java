@@ -1,10 +1,6 @@
 package com.sdl.dxa.modules.smarttarget.analytics.dummy;
 
-import com.tridion.smarttarget.SmartTargetException;
 import com.tridion.smarttarget.analytics.CustomDimensionNames;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.commons.lang.StringUtils;
 
 public class DummyDataCustomDimensionNames extends CustomDimensionNames
 {

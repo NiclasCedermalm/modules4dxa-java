@@ -70,4 +70,7 @@ public class SmartTargetRegionMvcData implements MvcData {
     public Map<String, Object> getMetadata() {
         return metadata;
     }
+
+    @Override
+    public void addMetadataValue(String key, Object obj) {}
 }

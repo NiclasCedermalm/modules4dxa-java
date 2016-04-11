@@ -1,7 +1,7 @@
 SmartTarget Module
 ========================
 
-This is a DXA module for SmartTarget 2014 SP1 and DXA 1.3.
+This is a DXA module for SmartTarget 2014 SP1 and DXA 1.4.
 It has the following functionality:
 
 * Make any DXA region SmartTarget enabled. This is done in metadata configuration of the page templates.
