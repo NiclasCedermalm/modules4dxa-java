@@ -2,7 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="xpm" uri="http://www.sdl.com/tridion-xpm" %>
 <%@ taglib prefix="dxa" uri="http://www.sdl.com/tridion-dxa" %>
-<jsp:useBean id="entity" type="com.sdl.dxa.modules.smarttarget.model.PromoBanner" scope="request"/>
+<jsp:useBean id="entity" type="com.sdl.dxa.modules.experienceoptimization.model.PromoBanner" scope="request"/>
 <jsp:useBean id="markup" type="com.sdl.webapp.common.markup.Markup" scope="request"/>
 <jsp:useBean id="screenWidth" type="com.sdl.webapp.common.api.ScreenWidth" scope="request"/>
 <%-- Example promo banner  --%>
@@ -18,9 +18,9 @@
     </c:otherwise>
 </c:choose>
 
-<div ${markup.entity(entity)}>
+<div>
     <div class="row">
-        <a href="${entity.link.url}" title="${entity.link.alternateText}" ${markup.property(entity, "link")}>
+        <a href="${entity.link.url}" title="${entity.link.alternateText}" <%--${markup.property(entity, "link")} --%>>
             <div class="col-sm-12">
                 <div class="hero">
                     <c:choose>

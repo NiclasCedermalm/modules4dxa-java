@@ -1,6 +1,6 @@
-package com.sdl.dxa.modules.smarttarget.markup;
+package com.sdl.dxa.modules.experienceoptimization.markup;
 
-import com.sdl.dxa.modules.smarttarget.model.SmartTargetRegion;
+import com.sdl.dxa.modules.smarttarget.model.entity.SmartTargetRegion;
 import com.sdl.webapp.common.api.WebRequestContext;
 import com.sdl.webapp.common.api.model.ViewModel;
 import com.sdl.webapp.common.markup.MarkupDecorator;
@@ -13,7 +13,7 @@ import com.sdl.webapp.common.markup.html.builders.HtmlBuilders;
  *
  * @author nic
  */
-public class SmartTargetRegionXpmMarkup implements MarkupDecorator {
+public class XORegionXpmMarkup implements MarkupDecorator {
 
     @Override
     public HtmlNode process(HtmlNode markup, ViewModel model, WebRequestContext webRequestContext) {
@@ -24,15 +24,15 @@ public class SmartTargetRegionXpmMarkup implements MarkupDecorator {
 
                 // If SmartTarget is disabled or down -> Ignore to generate targeting XPM markup
                 //
-                if ( stRegion.getXpmMarkup() == null ) {
+                if ( stRegion.getStartQueryXpmMarkup() == null ) {
                     return markup;
                 }
 
                 // Surround with the SmartTarget XPM region markup
                 //
                 markup =
-                        HtmlBuilders.span()
-                                .withNode(new HtmlCommentNode(stRegion.getXpmMarkup()))
+                        HtmlBuilders.div()
+                                .withNode(new HtmlCommentNode(stRegion.getStartQueryXpmMarkup()))
                                 .withNode(markup).build();
 
                 /* TODO: Do we need to have the following markup?

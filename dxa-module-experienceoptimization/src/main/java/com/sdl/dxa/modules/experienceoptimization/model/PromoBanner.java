@@ -1,4 +1,4 @@
-package com.sdl.dxa.modules.smarttarget.model;
+package com.sdl.dxa.modules.experienceoptimization.model;
 
 import com.sdl.webapp.common.api.mapping.semantic.annotations.SemanticEntity;
 import com.sdl.webapp.common.api.mapping.semantic.annotations.SemanticProperty;
@@ -11,7 +11,7 @@ import static com.sdl.webapp.common.api.mapping.semantic.config.SemanticVocabula
 
 /**
  * Promo Banner
- * - Simple banner which can be used in SmartTarget promotions.
+ * - Simple banner which can be used in XO promotions.
  *
  * @author nic
  */

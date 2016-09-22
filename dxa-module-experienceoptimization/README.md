@@ -1,15 +1,14 @@
-SmartTarget Module
-========================
+Experience Optimization Module
+==================================
 
-This is a DXA module for SmartTarget 2014 SP1 and DXA 1.4.
-It has the following functionality:
+This is a DXA module for Experience Optimization 8.1.1 and DXA 1.5. It is an extension to the standard [DXA Experience Optimization module](https://github.com/sdl/dxa-modules/tree/master/webapp-java/dxa-module-smarttarget-web8) with
+the following add-on functionality:
 
 * Make any DXA region SmartTarget enabled. This is done in metadata configuration of the page templates.
 * All needed XPM markup and content experiments link processing is injected runtime meaning that any DXA view can be used as a SmartTarget promotion.
 * If no promotion found for current region it will fall back on the static content already residing on the page
-* Full support for Content Experiments including view and conversion tracking
-* Local DB analytics provider - offer the possibility to have all tracking of content experiments in a local SQL database instead of Google Analytics
-* Automatic selection of winner in Content Experiments, i.e. after a winner has been selected that promotion is always shown for all visitors. This is configurable in the SmartTarget configuration.
+* Local DB Analytics Provider - offer the possibility to have all tracking of content experiments in a local SQL database instead of Google Analytics
+* Possibility to enable automatic selection of winner in Content Experiments, i.e. after a winner has been selected that promotion is always shown for all visitors. This is configurable in the SmartTarget configuration.
 
 ## Setup
 

@@ -1,4 +1,4 @@
-package com.sdl.dxa.modules.smarttarget;
+package com.sdl.dxa.modules.experienceoptimization;
 
 import java.util.Map;
 
@@ -7,9 +7,10 @@ import java.util.Map;
  *
  * @author nic
  */
-public class SmartTargetRegionConfig {
+public class XORegionConfig {
 
-    private String regionName;
+    private String name;
+    private String view;
     private int maxItems;
     private AllowDuplicatesValue allowDuplicates;
 
@@ -34,14 +35,27 @@ public class SmartTargetRegionConfig {
         }
     }
 
-    public SmartTargetRegionConfig(Map<String,String> configData) {
-        this.regionName = configData.get("view");  // TODO: Should we also have view and region name for SmartTarget metadata???
+    public XORegionConfig(Map<String,String> configData) {
+        this.view = configData.get("view");
+        this.name = configData.get("name");
+        if ( this.name == null ) {
+            if ( this.view.contains(":") ) {
+                this.name = this.view.split(":")[1];
+            }
+            else {
+                this.name = this.view;
+            }
+        }
         this.maxItems = (int) Float.parseFloat(configData.get("maxItems"));
         this.allowDuplicates = AllowDuplicatesValue.fromString(configData.get("allowDuplicates"));
     }
 
-    public String getRegionName() {
-        return regionName;
+    public String getName() {
+        return name;
+    }
+
+    public String getView() {
+        return view;
     }
 
     public int getMaxItems() {
