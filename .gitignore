@@ -6,3 +6,9 @@
 .idea
 .settings/
 target/
+obj
+bin
+*.dll
+*.user
+*.suo
+packages/

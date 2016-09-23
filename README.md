@@ -1,14 +1,16 @@
 Modules for Digital Experience Accelerator (DXA) for Java
 =============================================================
 
-This repository contains various modules I have done for DXA.Java in various Proof-of-Concepts and customer demonstrations.
-I will use this push out modules to the community that is not part of the standard set of DXA modules delivered by SDL.
+This repository contains various modules I have done for DXA.Java in various customer workshops & projects.
+I will use this repository to push out modules to the community that is not part of the standard set of DXA modules delivered by SDL.
 The code is fully open source, so you can do whatever you like with it. There is no official support of them, but I gladly accept
 pull requests and issues.
 
 The following modules are available:
 
-* [SmartTarget](./dxa-module-smarttarget/README.md)
+* [Experience Optimization](./dxa-module-experienceoptimization/README.md)
+* [DXA Container Framework](./dxa-container-framework/README.md)
+* [Flex Layout](./dxa-module-flex-layout/README.md)
 
 
 Branching model
