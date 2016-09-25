@@ -33,9 +33,6 @@ namespace SDL.DXA.Extensions.Container
             IList<Container> containers = new List<Container>();
             Container currentContainer= null;
 
-            // TODO: Have a better page index calculation algorithm that can handle reshuffle of component presentations
-            //
-
             foreach (ComponentPresentation cp in page.ComponentPresentations )
             {             
                 if ( IsContainer(cp) )
@@ -47,28 +44,42 @@ namespace SDL.DXA.Extensions.Container
                 }
                 else
                 {
-                    if (currentContainer != null && currentContainer.Owns(cp)) 
+                    if (currentContainer != null) 
                     {
                         ComponentPresentationInfo cpInfo = currentContainer.AddToComponentPresentationList(cp);
                     }
                 }
-                pageIndex++; // This works only if we move the last item around....
+                pageIndex++; 
             }
        
             return containers;
         }
 
+        /// <summary>
+        /// Check if provided component presentation is a container component or not.
+        /// </summary>
+        /// <param name="componentPresentation"></param>
+        /// <returns>bool</returns>
         static public bool IsContainer(ComponentPresentation componentPresentation)
         {
-            // TODO: Have a better indication algorithm for containers
-            return componentPresentation.Component.Schema.Title.Contains("Container");
+            return GetContainerName(componentPresentation.ComponentTemplate) != null;
         }
 
+        /// <summary>
+        /// Extract container index from component presentation.
+        /// </summary>
+        /// <param name="componentPresentation"></param>
+        /// <returns></returns>
         static public int ExtractContainerIndex(ComponentPresentationInfo componentPresentation)
         {
             return ExtractContainerIndex(componentPresentation.ComponentPresentation.ComponentTemplate.Id);
         }
 
+        /// <summary>
+        /// Extract container index from template TCM-URI (where the index is piggybacked as ID version)
+        /// </summary>
+        /// <param name="templateUri"></param>
+        /// <returns></returns>
         static public int ExtractContainerIndex(TcmUri templateUri)
         {
             String itemId = templateUri.ItemId.ToString();
@@ -81,19 +92,50 @@ namespace SDL.DXA.Extensions.Container
             return -1;
         }
 
+        /// <summary>
+        /// Remove container index from Template TCM-URI
+        /// </summary>
+        /// <param name="templateUri"></param>
+        /// <returns></returns>
         static public TcmUri RemoveContainerIndex(TcmUri templateUri)
         {
             return templateUri.GetVersionlessUri();
         }
 
+        /// <summary>
+        /// Get container name
+        /// </summary>
+        /// <param name="containerTemplate"></param>
+        /// <returns></returns>
+        static public string GetContainerName(ComponentTemplate containerTemplate)
+        {
+            if ( containerTemplate != null && containerTemplate.Metadata != null && containerTemplate.MetadataSchema != null )
+            {
+                var metadata = new ItemFields(containerTemplate.Metadata, containerTemplate.MetadataSchema);
+                if (metadata.Contains("routeValues"))
+                {
+                    TextField routeValues = (TextField) metadata["routeValues"];
+                    if (routeValues.Values.Count() > 0 && routeValues.Value.Contains("containerRegion"))
+                    {
+                        return routeValues.Value.Replace("containerRegion:", "");
+                    }
+                }
+            }        
+            return null;
+        }
+
+        /// <summary>
+        /// Protecte constructor
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="containerComponent"></param>
+        /// <param name="containerTemplate"></param>
         protected Container(Page page, Component containerComponent, ComponentTemplate containerTemplate)
         {
             this.page = page;
             this.containerComponent = containerComponent;
             this.ComponentPresentations = new List<ComponentPresentationInfo>();
-            var metadata = new ItemFields(containerTemplate.Metadata, containerTemplate.MetadataSchema);
-            TextField routeValues = (TextField) metadata["routeValues"];
-            this.containerName = routeValues.Value.Replace("containerRegion:", "");
+            this.containerName = GetContainerName(containerTemplate);
         }
 
         public String Name 
@@ -113,21 +155,6 @@ namespace SDL.DXA.Extensions.Container
             set { this.pageIndex = value; }
         }
 
-        public bool Owns(ComponentPresentation componentPresentation)
-        {
-            // TODO: Is the component template invalid in this case when using the container index??
-            /*
-            var metadata = new ItemFields(componentPresentation.ComponentTemplate.Metadata, componentPresentation.ComponentTemplate.MetadataSchema);
-            if ( metadata.Contains("regionName") )
-            {
-                TextField regionName = (TextField)metadata["regionName"];
-                return regionName.Value.Equals(this.containerName);
-            }
-            return false;
-            */
-            return true;
-        }
-
         public IList<ComponentPresentationInfo> ComponentPresentations { get; private set; }
 
         private ComponentPresentationInfo AddToComponentPresentationList(ComponentPresentation componentPresentation)
@@ -137,7 +164,11 @@ namespace SDL.DXA.Extensions.Container
             return cpInfo;
         }
 
-        public virtual void Add(ComponentPresentation componentPresentation)
+        /// <summary>
+        /// Add component presentation the container
+        /// </summary>
+        /// <param name="componentPresentation"></param>
+        public void Add(ComponentPresentation componentPresentation)
         {
             Logger.Write("Adding CP to page index: " + pageIndex, "RegionGravityHandler", LogCategory.Custom, TraceEventType.Information);
             this.AddToComponentPresentationList(componentPresentation);

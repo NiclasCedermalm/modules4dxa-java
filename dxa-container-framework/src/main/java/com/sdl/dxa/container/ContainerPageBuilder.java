@@ -33,6 +33,7 @@ public class ContainerPageBuilder implements PageBuilder {
     @Override
     public PageModel createPage(org.dd4t.contentmodel.Page genericPage, PageModel pageModel, Localization localization, ContentProvider contentProvider) throws ContentProviderException {
 
+        // TODO: If a container is interrupted with a CP with another template should the container be considered as closed then?
 
         List<AbstractContainerModel> containers = new ArrayList<>();
 
@@ -97,8 +98,9 @@ public class ContainerPageBuilder implements PageBuilder {
             containerAbsoluteOrder.remove(0);
             RegionModel regionWithContainerItems = pageModel.getRegions().get(container.getName());
             if ( regionWithContainerItems == null ) {
-                log.warn("Container region not found on page: " + container.getName());
-                break;
+                // No container items found on the page -> continue
+                //
+                continue;
             }
             List<Integer> orderList = regionAbsoluteOrder.get(container.getName());
             if ( orderList != null && !orderList.isEmpty() ) {

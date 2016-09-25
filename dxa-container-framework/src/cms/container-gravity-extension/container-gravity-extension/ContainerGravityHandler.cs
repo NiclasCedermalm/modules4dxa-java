@@ -34,11 +34,10 @@ namespace SDL.DXA.Extensions.Container
         /// <param name="phase"></param>
         public static void OnPageSave(Page page, SaveEventArgs args, EventPhases phase)
         {
-            Logger.Write("On Page Save", "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
             if ( IsContainerPage(page) )
             {
                 IList<Container> containers = Container.GetContainers(page);
-                Logger.Write("Regions: " + containers.Count, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
+                //Logger.Write("Regions: " + containers.Count, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
                 if (containers.Count > 0)
                 {
                     // Check if last component really belongs to the last region, if not let some region gravity happen on it
@@ -46,18 +45,17 @@ namespace SDL.DXA.Extensions.Container
                     //
                     Container lastContainer = containers[containers.Count - 1];
                     bool foundNewComponent = false;
-                    Logger.Write("Last container : " + lastContainer, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
+                    //Logger.Write("Last container : " + lastContainer, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
                     if (lastContainer.ComponentPresentations.Count > 0)
                     {
-                        Logger.Write("Last Region Count:" + lastContainer.ComponentPresentations.Count, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
+                        //Logger.Write("Last Region Count:" + lastContainer.ComponentPresentations.Count, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
                         ComponentPresentationInfo lastCP = lastContainer.ComponentPresentations[lastContainer.ComponentPresentations.Count - 1];
                        
                         if (lastCP.ContainerIndex != -1 )
                         {
-                            Logger.Write("Region Index:" + lastCP.ContainerIndex, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
-                        
+                            //Logger.Write("Region Index:" + lastCP.ContainerIndex, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);                       
                             Container container = containers[lastCP.ContainerIndex-1];
-                            Logger.Write("Found container: " + container.Name, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
+                            //Logger.Write("Found container: " + container.Name, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
                             if (container != null)
                             {
                                 container.Add(lastCP.ComponentPresentation);
@@ -71,7 +69,8 @@ namespace SDL.DXA.Extensions.Container
                     }
                     if (!foundNewComponent)
                     {
-                        Logger.Write("No new component added to the bottom...", "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
+                        //Logger.Write("No new component added to the bottom...", "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
+                        
                         // Process component presentations that have been moved into an empty container
                         //
                         ProcessComponentPresentationsInWrongContainer(page.ComponentPresentations, containers);
@@ -145,16 +144,16 @@ namespace SDL.DXA.Extensions.Container
         /// <param name="componentPresentations"></param>
         static public void ProcessComponentTemplates(IList<ComponentPresentation> componentPresentations)
         {
-            Logger.Write("Processing Component Templates...", "ContainernGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
+            //Logger.Write("Processing Component Templates...", "ContainernGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
             foreach ( ComponentPresentation cp in componentPresentations )
             {
                 // Check if component template really exist -> if not extract the region index from the template ID
                 //                       
                 if (Container.ExtractContainerIndex(cp.ComponentTemplate.Id) != -1)
                 {
-                    Logger.Write("Found Template URI with container index: " + cp.ComponentTemplate.Id, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
+                    //Logger.Write("Found Template URI with container index: " + cp.ComponentTemplate.Id, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
                     TcmUri realTemplateUri = Container.RemoveContainerIndex(cp.ComponentTemplate.Id);
-                    Logger.Write("Real Template URI: " + realTemplateUri, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
+                    //Logger.Write("Real Template URI: " + realTemplateUri, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
                     cp.ComponentTemplate = new ComponentTemplate(realTemplateUri, cp.Session); 
                 }
 
