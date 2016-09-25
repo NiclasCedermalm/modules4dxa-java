@@ -13,18 +13,19 @@ It is based on the DXA Container Framework. The module contains layout container
 Usage
 ------
 
-Install the CMS content porter package from the '/cms'-directory. It will install the needed schemas, templates and XPM content types.
+Run the [CMS Import scripts](./cms/README.md). They will install the needed schemas, templates and XPM content types.
+Republish the Settings page to update DXA with the new schemas and templates.
 
-Install the DXA Container Framework + Flex Layout DXA module in your local Maven repository by go into each module and do:
+Install the DXA Container Framework + Flex Layout DXA module in your local Maven repository by doing the following in the root of this repository:
 
 ```
-mvn install
+mvn install -Pflexlayout
 ```
 
 Add the DXA module as Maven dependency to your web application POM file:
 
 ```
-    <dependencies> `
+    <dependencies> 
         ...
         <dependency>
             <groupId>com.sdl.modules4dxa</groupId>
