@@ -28,6 +28,7 @@
     <properties>
       <java-version>1.8</java-version>
       <dxa.version>1.5.0</dxa.version>
+      <dxa-release-branch>release/1.5</dxa-release-branch>
       <spring.version>3.1.4.RELEASE</spring.version>
    </properties>
 
@@ -39,6 +40,15 @@
             <timezone>UTC+1</timezone>
         </developer>
     </developers>
+
+    <repositories>
+        <repository>
+            <id>github-project-repo</id>
+            <url>
+                https://raw.githubusercontent.com/sdl/dxa-web-application-java/${dxa-release-branch}/local-project-repo
+            </url>
+        </repository>
+    </repositories>
 
     <dependencyManagement>
         <dependencies>
