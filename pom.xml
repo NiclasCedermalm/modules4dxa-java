@@ -35,11 +35,21 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>dxa-module-experienceoptimization</module>
-        <module>dxa-container-framework</module>
-        <module>dxa-module-flex-layout</module>
-    </modules>
+    <profiles>
+        <profile>
+            <id>xo</id>
+            <modules>
+                <module>dxa-module-experienceoptimization</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>flexlayout</id>
+            <modules>
+                <module>dxa-container-framework</module>
+                <module>dxa-module-flex-layout</module>
+            </modules>
+        </profile>
+    </profiles>
 
 
 </project>

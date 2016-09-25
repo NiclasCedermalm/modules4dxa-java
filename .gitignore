@@ -8,7 +8,7 @@
 target/
 obj
 bin
-*.dll
+Tridion.*.dll
 *.user
 *.suo
 packages/
