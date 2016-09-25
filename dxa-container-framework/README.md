@@ -35,6 +35,7 @@ Setup
 
 The DXA Container Framework requires you install an extension in SDL Web. It make sure all drag&dropped components in XPM ends up in the correct place.
 Either compile the C# code in the src/cms/container-gravity-extension directory or downlaod the DDL here: 
+[https://github.com/NiclasCedermalm/modules4dxa-java/raw/master/dxa-container-framework/src/cms/container-gravity-extension/compiled/container-gravity-extension-v1.0.1.dll](container-gravity-extension-v1.0.1.dll)
 Upload the DLL to your SDL Web server and place it somewhere local on the server.
 Then add the following in your %SDLWEB_HOME%\config\Tridion.ContentManager.config in <extensions> tag:
 
