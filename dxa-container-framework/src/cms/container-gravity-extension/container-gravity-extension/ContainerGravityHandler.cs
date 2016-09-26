@@ -3,7 +3,6 @@ using Tridion.ContentManager;
 using Tridion.ContentManager.CommunicationManagement;
 using Tridion.ContentManager.Extensibility;
 using Tridion.ContentManager.Extensibility.Events;
-using Tridion.Logging;
 
 namespace SDL.DXA.Extensions.Container
 {
@@ -19,8 +18,7 @@ namespace SDL.DXA.Extensions.Container
     {
         /// <summary>
         /// Constructor
-        /// </summary>
-                   
+        /// </summary>                
         public ContainerGravityHandler()
         {
             EventSystem.Subscribe<Page, SaveEventArgs>(OnPageSave, EventPhases.Initiated);
@@ -33,51 +31,24 @@ namespace SDL.DXA.Extensions.Container
         /// <param name="args"></param>
         /// <param name="phase"></param>
         public static void OnPageSave(Page page, SaveEventArgs args, EventPhases phase)
-        {
+        {      
             if ( IsContainerPage(page) )
             {
                 IList<Container> containers = Container.GetContainers(page);
-                //Logger.Write("Regions: " + containers.Count, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
                 if (containers.Count > 0)
                 {
-                    // Check if last component really belongs to the last region, if not let some region gravity happen on it
-                    // This is primarily to support adding components on-the-fly in regions via XPM
-                    //
-                    Container lastContainer = containers[containers.Count - 1];
-                    bool foundNewComponent = false;
-                    //Logger.Write("Last container : " + lastContainer, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
-                    if (lastContainer.ComponentPresentations.Count > 0)
+                    var foundComponentInWrongContainer = ProcessComponentPresentationsInWrongContainer(page, containers);
+                    if ( !foundComponentInWrongContainer )
                     {
-                        //Logger.Write("Last Region Count:" + lastContainer.ComponentPresentations.Count, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
-                        ComponentPresentationInfo lastCP = lastContainer.ComponentPresentations[lastContainer.ComponentPresentations.Count - 1];
-                       
-                        if (lastCP.ContainerIndex != -1 )
+                        var containerMetadata = ContainerMetadata.Load(page);
+                        if ( containerMetadata != null && containerMetadata.Count != containers.Count )
                         {
-                            //Logger.Write("Region Index:" + lastCP.ContainerIndex, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);                       
-                            Container container = containers[lastCP.ContainerIndex-1];
-                            //Logger.Write("Found container: " + container.Name, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
-                            if (container != null)
-                            {
-                                container.Add(lastCP.ComponentPresentation);
-
-                                // Remove the last entry from the page, because now the CP is added to another region on the page
-                                //
-                                page.ComponentPresentations.RemoveAt(page.ComponentPresentations.Count - 1);
-                                foundNewComponent = true;
-                            }
-                        }
+                            ProcessContainersOnWrongLocation(containers, page, containerMetadata);
+                        }                       
                     }
-                    if (!foundNewComponent)
-                    {
-                        //Logger.Write("No new component added to the bottom...", "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
-                        
-                        // Process component presentations that have been moved into an empty container
-                        //
-                        ProcessComponentPresentationsInWrongContainer(page.ComponentPresentations, containers);
-                    }
-                    ProcessComponentTemplates(page.ComponentPresentations);           
+                    ProcessComponentTemplates(page.ComponentPresentations);
+                    ContainerMetadata.Save(page, containers);
                 }
-
             }
         }
 
@@ -101,40 +72,89 @@ namespace SDL.DXA.Extensions.Container
         /// <summary>
         /// Process component presentations that are in the wrong container
         /// </summary>
-        /// <param name="componentPresentations"></param>
+        /// <param name="page"></param>
         /// <param name="containers"></param>
-        static public void ProcessComponentPresentationsInWrongContainer(IList<ComponentPresentation> componentPresentations, IList<Container> containers)
+        /// 
+        static public bool ProcessComponentPresentationsInWrongContainer(Page page, IList<Container> containers)
         {
-            int pageIndex = -1;
-            bool foundInvalidItem = false;
-            Container correctContainer = null;
-            ComponentPresentation componentPresentation = null;
-            foreach (Container container in containers)
+            int pageIndex = 0;
+            foreach ( var componentPresentation in page.ComponentPresentations )
             {
-                if ( foundInvalidItem )
+                int containerIndex = Container.ExtractContainerIndex(componentPresentation.ComponentTemplate.Id);
+                if ( containerIndex != -1 )
                 {
-                    container.PageIndex--;
-                    break;
-                }
-                pageIndex++; // Count one for each container
-                foreach (var cp in container.ComponentPresentations)
-                {
-                    pageIndex++; // count one for each component presentation
-                    if (cp.ContainerIndex != -1 && cp.Owner.Index != cp.ContainerIndex)
+                    var selectedContainer = containers[containerIndex - 1];
+                    var existingCp = selectedContainer.GetComponentPresentation(pageIndex);
+                    if ( existingCp != null && existingCp.ComponentPresentation == componentPresentation )
                     {
-                        Logger.Write("Found invaild item in Container with container index: " + cp.ContainerIndex + " & current container index: " + cp.Owner.Index , "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
-                        componentPresentations.RemoveAt(pageIndex);
-                        correctContainer = containers[cp.ContainerIndex - 1];
-                        componentPresentation = cp.ComponentPresentation;
-                        foundInvalidItem = true;
-                        break; // There should only be one item that is incorrect container
+                        // Component presentation already in correct container. Skipping...
+                        //
+                        break;
+                    }
+
+                    page.ComponentPresentations.RemoveAt(pageIndex);
+                
+                    // Compensate start page index of containers below current component presentation
+                    //
+                    foreach ( var container in containers )
+                    {
+                        if ( container.PageIndex > pageIndex )
+                        {
+                            container.PageIndex--;
+                        }
+                    }
+
+                    selectedContainer.Add(componentPresentation); 
+                    return true;
+                }
+
+                pageIndex++;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Process containers on wrong location in the page
+        /// </summary>
+        /// <param name="newContainers"></param>
+        /// <param name="page"></param>
+        /// <param name="oldContainers"></param>
+        static public void ProcessContainersOnWrongLocation(IList<Container> newContainers, Page page, IList<ContainerMetadata> containerMetadataList)
+        {
+ 
+            for ( int i=0; i < newContainers.Count; i++ )
+            {
+                var container = newContainers[i];
+                if ( container.ComponentPresentations.Count == 0 && i+1 < newContainers.Count )
+                {
+                    var nextContainer = newContainers[i + 1];
+                    if ( container.PageIndex == nextContainer.PageIndex-1 ) // Found two containers lying beside eachother on the page
+                    {
+                        // Verify so the container items is not in the wrong container.
+                        // If the container has been drag&dropped through XPM it will be attached to the container directly. So this needs to be corrected in that case.
+                        //
+                        ContainerMetadata containerMetadata = null;
+                        foreach ( var metadata in containerMetadataList )
+                        {
+                            if ( container.Matches(metadata) )
+                            {
+                                containerMetadata = metadata;
+                                break;
+                            }
+                        }
+                        
+                        if ( containerMetadata != null && containerMetadata.Count > 0 )
+                        {
+                            int newPageIndex = container.PageIndex + containerMetadata.Count + 1;
+                            var containerCp = page.ComponentPresentations[nextContainer.PageIndex];
+                            page.ComponentPresentations.RemoveAt(nextContainer.PageIndex);
+                            page.ComponentPresentations.Insert(newPageIndex, containerCp);
+                            return;
+                        }
                     }
                 }
             }
-            if ( correctContainer != null )
-            {
-                correctContainer.Add(componentPresentation);
-            }
+
         }
 
         /// <summary>
@@ -144,21 +164,18 @@ namespace SDL.DXA.Extensions.Container
         /// <param name="componentPresentations"></param>
         static public void ProcessComponentTemplates(IList<ComponentPresentation> componentPresentations)
         {
-            //Logger.Write("Processing Component Templates...", "ContainernGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
             foreach ( ComponentPresentation cp in componentPresentations )
             {
                 // Check if component template really exist -> if not extract the region index from the template ID
                 //                       
                 if (Container.ExtractContainerIndex(cp.ComponentTemplate.Id) != -1)
                 {
-                    //Logger.Write("Found Template URI with container index: " + cp.ComponentTemplate.Id, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
                     TcmUri realTemplateUri = Container.RemoveContainerIndex(cp.ComponentTemplate.Id);
-                    //Logger.Write("Real Template URI: " + realTemplateUri, "ContainerGravityHandler", LogCategory.Custom, System.Diagnostics.TraceEventType.Information);
                     cp.ComponentTemplate = new ComponentTemplate(realTemplateUri, cp.Session); 
                 }
-
             }
         }
         
     }
+
 }

@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Tridion.ContentManager;
 using Tridion.ContentManager.CommunicationManagement;
 using Tridion.ContentManager.ContentManagement;
 using Tridion.ContentManager.ContentManagement.Fields;
-using Tridion.Logging;
 
 namespace SDL.DXA.Extensions.Container
 {
@@ -17,6 +16,7 @@ namespace SDL.DXA.Extensions.Container
     {
         protected Page page;
         protected Component containerComponent;
+        protected ComponentTemplate containerTemplate;
         private string containerName;
         private int index;
         private int pageIndex;
@@ -44,9 +44,9 @@ namespace SDL.DXA.Extensions.Container
                 }
                 else
                 {
-                    if (currentContainer != null) 
+                    if (currentContainer != null && currentContainer.Owns(cp)) 
                     {
-                        ComponentPresentationInfo cpInfo = currentContainer.AddToComponentPresentationList(cp);
+                        ComponentPresentationInfo cpInfo = currentContainer.AddToComponentPresentationList(cp, pageIndex);
                     }
                 }
                 pageIndex++; 
@@ -134,13 +134,29 @@ namespace SDL.DXA.Extensions.Container
         {
             this.page = page;
             this.containerComponent = containerComponent;
+            this.containerTemplate = containerTemplate;
             this.ComponentPresentations = new List<ComponentPresentationInfo>();
             this.containerName = GetContainerName(containerTemplate);
         }
 
-        public String Name 
+        public string Id
+        {
+            get { return this.containerComponent.Id; }
+        }
+
+        public string TemplateId
+        {
+            get { return this.containerTemplate.Id; }
+        }
+
+        public string Title 
         {
             get { return this.containerComponent.Title; }
+        }
+
+        public string Name
+        {
+            get { return this.containerName; }
         }
  
         public int Index
@@ -155,11 +171,51 @@ namespace SDL.DXA.Extensions.Container
             set { this.pageIndex = value; }
         }
 
+        /// <summary>
+        /// Check if a component presentation is own by this container
+        /// </summary>
+        /// <param name="componentPresentation"></param>
+        /// <returns></returns>
+        public bool Owns(ComponentPresentation componentPresentation)
+        {
+            if (componentPresentation.ComponentTemplate.Metadata != null && componentPresentation.ComponentTemplate.MetadataSchema != null)
+            {
+                var metadata = new ItemFields(componentPresentation.ComponentTemplate.Metadata, componentPresentation.ComponentTemplate.MetadataSchema);
+                if (metadata.Contains("regionName"))
+                {
+                    TextField regionName = (TextField)metadata["regionName"];
+                    if (regionName.Values.Count() > 0 )
+                    {
+                        return regionName.Value.Equals(this.containerName);
+                    }
+                }
+            }
+            return false;
+        }
+
+        public bool Matches(ContainerMetadata containerMetadata)
+        {
+            return containerMetadata.Id == this.containerComponent.Id &&
+                   containerMetadata.TemplateId == this.containerTemplate.Id;
+        }
+
         public IList<ComponentPresentationInfo> ComponentPresentations { get; private set; }
 
-        private ComponentPresentationInfo AddToComponentPresentationList(ComponentPresentation componentPresentation)
+        public ComponentPresentationInfo GetComponentPresentation(int pageIndex)
         {
-            ComponentPresentationInfo cpInfo = new ComponentPresentationInfo(this.page, componentPresentation, this);
+            foreach ( var cp in this.ComponentPresentations )
+            {
+                if ( cp.PageIndex == pageIndex )
+                {
+                    return cp;
+                }
+            }
+            return null;
+        }
+
+        private ComponentPresentationInfo AddToComponentPresentationList(ComponentPresentation componentPresentation, int pageIndex)
+        {
+            ComponentPresentationInfo cpInfo = new ComponentPresentationInfo(componentPresentation, this, pageIndex);
             this.ComponentPresentations.Add(cpInfo);
             return cpInfo;
         }
@@ -170,8 +226,7 @@ namespace SDL.DXA.Extensions.Container
         /// <param name="componentPresentation"></param>
         public void Add(ComponentPresentation componentPresentation)
         {
-            Logger.Write("Adding CP to page index: " + pageIndex, "RegionGravityHandler", LogCategory.Custom, TraceEventType.Information);
-            this.AddToComponentPresentationList(componentPresentation);
+            this.AddToComponentPresentationList(componentPresentation, pageIndex + this.ComponentPresentations.Count() + 1);
             page.ComponentPresentations.Insert(pageIndex + this.ComponentPresentations.Count(), componentPresentation);
             
         }
@@ -184,17 +239,91 @@ namespace SDL.DXA.Extensions.Container
     /// </summary>
     public class ComponentPresentationInfo
     {
-
-        public ComponentPresentationInfo(Page page, ComponentPresentation componentPresentation, Container owner)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="componentPresentation"></param>
+        /// <param name="owner"></param>
+        /// <param name="pageIndex"></param>
+        public ComponentPresentationInfo(ComponentPresentation componentPresentation, Container owner, int pageIndex)
         {
             ComponentPresentation = componentPresentation;
             ContainerIndex = Container.ExtractContainerIndex(componentPresentation.ComponentTemplate.Id);
             Owner = owner;
+            PageIndex = pageIndex;
         }
 
         public ComponentPresentation ComponentPresentation { get; private set; }
    
         public int ContainerIndex { get; private set; }
+        public int PageIndex { get; private set; }
         public Container Owner { get; private set; }
+    }
+
+    /// <summary>
+    /// Container metadata stored on page appdata
+    /// </summary>
+    public class ContainerMetadata
+    {
+        public string Id
+        {
+            get; internal set;
+        }
+
+        public string TemplateId
+        {
+            get; internal set;
+        }
+
+        public int Count
+        {
+            get; internal set;
+        }
+
+        public static IList<ContainerMetadata> Load(Page page)
+        {
+            var metadataList = new List<ContainerMetadata>();
+
+            var appData = page.LoadApplicationData("ContainerMetadata");
+            if (appData != null)
+            {
+
+                // Metadata format: [ID]#[Template ID]=[Count],...
+                //
+                var metadataStr = Encoding.Default.GetString(appData.Data);
+                Log.Info("Read metadata: " + metadataStr);
+
+                string[] tokens = metadataStr.Split( new string[] { "#", "=", ";" }, StringSplitOptions.RemoveEmptyEntries);
+                int index = 0;
+                while (index < tokens.Length)
+                {
+                    ContainerMetadata metadata = new ContainerMetadata();
+                    metadata.Id = tokens[index++];
+                    metadata.TemplateId = tokens[index++];
+                    metadata.Count = Int32.Parse(tokens[index++]);
+                    metadataList.Add(metadata);
+                }
+            }
+            return metadataList;
+        }
+
+        public static void Save(Page page, IList<Container> containers)
+        {
+            var metadata = new StringBuilder();
+            foreach ( var container in containers )
+            {
+                metadata.Append(container.Id);
+                metadata.Append("#");
+                metadata.Append(container.TemplateId);
+                metadata.Append("=");
+                metadata.Append(container.ComponentPresentations.Count);
+                metadata.Append(";");
+            }
+            Log.Info("Saving metadata: " + metadata);
+            ApplicationData appData = new ApplicationData("ContainerMetadata");
+            appData.Data = Encoding.Default.GetBytes(metadata.ToString());
+            page.SaveApplicationData(appData);
+        }
+
     }
 }
