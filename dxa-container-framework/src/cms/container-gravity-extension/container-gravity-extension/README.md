@@ -1,3 +1,0 @@
-Container Gravity CME Extension
-=================================
-
